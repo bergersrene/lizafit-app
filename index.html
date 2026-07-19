@@ -212,7 +212,7 @@ dialog>p { color:#8c8c8c; margin:0 0 25px; }
           <h2 id="shakeName"></h2>
           <p id="shakeIngredients"></p>
           <div class="shake-why" id="shakeWhy"></div>
-          <small>Neem dit alleen als je niet kort na de training een normale eiwitrijke maaltijd eet. Een shake is niet verplicht.</small>
+          <small>Gebruik de portie op het etiket. Voor vetverlies telt een shake mee als voeding; neem hem niet automatisch boven op een volledige maaltijd.</small>
           <a href="https://www.voedingscentrum.nl/nl/service/vraag-en-antwoord/afvallen-en-gewicht/is-een-eiwitshake-gezond-en-nodig-als-je-sport.aspx" target="_blank" rel="noopener">Lees het advies van het Voedingscentrum ↗</a>
         </article>
       </section>
@@ -320,10 +320,18 @@ const dailyQuotes = [
 ];
 
 const shakeAdvice = [
-  { name: 'Frisse kwarkshake', ingredients: '150 g magere kwark · water naar smaak · handje diepvriesbessen', why: 'Een eenvoudige optie met gewone voeding, zonder dat je direct een sportsupplement nodig hebt.' },
-  { name: 'Lichte bananenshake', ingredients: '250 ml halfvolle melk of ongezoete sojadrink · ½ banaan · kaneel', why: 'Praktisch na een training wanneer een normale maaltijd nog even duurt. Houd de portie banaan klein bij een doel van vetverlies.' },
-  { name: 'Vandaag geen shake nodig', ingredients: 'Kies water en eet je normale maaltijd met bijvoorbeeld kwark, ei, tofu, vis of peulvruchten.', why: 'Als je binnen ongeveer twee uur normaal eet, voegt een extra shake meestal vooral extra energie toe.' }
+  { name: 'Vanilla berry shake', ingredients: '1 portie vanille-eiwitpoeder volgens het etiket · water · handje diepvriesbessen · ijsblokjes', why: 'Beste moment: na de training, als je niet binnen ongeveer 2 uur een eiwitrijke maaltijd eet. Blend met extra ijs voor een milkshake-gevoel zonder veel extra energie.' },
+  { name: 'Vanilla iced coffee', ingredients: '1 portie vanille-eiwitpoeder volgens het etiket · koude koffie · water of een scheut halfvolle melk · ijs', why: 'Beste moment: na een ochtend- of middagtraining wanneer je maaltijd nog even duurt. Gebruik cafeïnevrij als je later op de dag traint of gevoelig bent voor cafeïne.' },
+  { name: 'Vanilla cinnamon shake', ingredients: '1 portie vanille-eiwitpoeder volgens het etiket · 250 ml water of ongezoete sojadrink · kaneel · ijs', why: 'Beste moment: na de training als praktische vervanger van een eiwitrijk eetmoment. Kaneel en een snufje zout maken vanille voller van smaak.' },
+  { name: 'Vanilla banana light', ingredients: '1 portie vanille-eiwitpoeder volgens het etiket · water · ½ kleine banaan · ijs', why: 'Beste moment: na een pittigere training als je ook trek hebt. Gebruik een halve banaan zodat de shake bij het doel vetverlies past.' },
+  { name: 'Vanilla kwark bowl', ingredients: '½ portie vanille-eiwitpoeder · 150 g magere kwark · scheutje water · bessen', why: 'Beste moment: als ontbijt of tussendoortje wanneer een drinkshake niet vult. Roer het poeder eerst met een klein beetje water glad en meng het daarna door de kwark.' }
 ];
+
+const restDayShakeAdvice = {
+  name: 'Rustdag: meestal geen shake nodig',
+  ingredients: 'Kies gewone eiwitrijke voeding, zoals kwark, ei, tofu, vis of peulvruchten. Drink vooral water.',
+  why: 'Moment: alleen bij ontbijt of als tussendoortje wanneer je met gewone voeding onvoldoende eiwit haalt. Een shake is geen verplicht dagelijks ritueel en extra eiwit versnelt vetverlies niet.'
+};
 
 function workoutForDate(date) {
   const dayNumber = Math.floor(date.getTime() / 86400000);
@@ -372,7 +380,10 @@ function render() {
 function renderDailyAdvice() {
   const dayNumber = Math.floor(activeDate.getTime() / 86400000);
   const quote = dailyQuotes[((dayNumber % dailyQuotes.length) + dailyQuotes.length) % dailyQuotes.length];
-  const shake = shakeAdvice[((dayNumber % shakeAdvice.length) + shakeAdvice.length) % shakeAdvice.length];
+  const isTrainingDay = plannedDates.has(dateKey(activeDate));
+  const shake = isTrainingDay
+    ? shakeAdvice[((dayNumber % shakeAdvice.length) + shakeAdvice.length) % shakeAdvice.length]
+    : restDayShakeAdvice;
   document.querySelector('#dailyQuote').textContent = quote;
   document.querySelector('#quoteDate').textContent = activeDate.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
   document.querySelector('#shakeName').textContent = shake.name;
@@ -457,6 +468,7 @@ function toggleActiveDayPlanning() {
   if (plannedDates.has(key)) plannedDates.delete(key); else plannedDates.add(key);
   localStorage.setItem('amby-fit-planned-days', JSON.stringify([...plannedDates]));
   renderWeek();
+  renderDailyAdvice();
 }
 
 function openExercise(index) {
